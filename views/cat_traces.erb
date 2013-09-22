@@ -33,7 +33,7 @@
   </div>
 </div>
 
-<link href="<%= aws_asset "assets/css/openlayers.css" %>" rel="stylesheet">
+<link href="<%= get_asset_path "assets/css/openlayers.css" %>" rel="stylesheet">
 <style type="text/css">
 
 /* map specific styles */
@@ -241,7 +241,7 @@
       projection: epsg4326,
       strategies: [new OpenLayers.Strategy.Fixed()],
       protocol: new OpenLayers.Protocol.HTTP({
-        url: "<%= aws_asset 'data/cats.json' %>",
+        url: "<%= get_asset_path 'data/cats.json' %>",
         format: new OpenLayers.Format.GeoJSON()
       }),
       styleMap: new OpenLayers.StyleMap(style),
