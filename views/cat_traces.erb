@@ -1,0 +1,315 @@
+    <div id="map">
+      <div id="about-overlay">
+        <a href='#' id='hide'>&#x2715;</a>
+        <h4>BBC Secret Life of the Cat</h4>
+        <p>This map shows the GPS traces of the cats tracked during BBC's Horizon programme, entitled <a title="BBC Secret life of the cat" href="http://www.bbc.co.uk/news/science-environment-22567526" target="_blank">The Secret Life of the Cat</a>.</p>
+        
+        <p>@datasource<br>Datasource available <a title="BBC Secret life of the cat data gihub" href="https://github.com/rjw57/secret-life-of-the-cat" target="_blank">here</a> - Thanks <a title="Rich Wareham" href="http://rjw57.github.io/blog/" target="_blank">Rich Wareham</a></p>
+        <p>@version<br>Datasource updated: <time class="dsource-date" datetime="<%= h(@datasource_date) %>"><%= h(@datasource_date_pretty) %></time></p>
+        <p class="attribution">mapping provided by <a href="http://o-s.co.uk" title="Thanks Ordnance Survey">Ordnance Survey</a></p>
+      </div>
+      
+    </div>
+<div id="data-container">
+  <div id="legend">
+    <h5>Cats</h5>
+    
+    <ul id="cat-list">
+<!-- populated on runtime -->      
+    </ul>
+    
+    <h5>Cat Legend</h5>
+    <p>  
+<dl>
+  <dt>Cat name</dt>
+  <dt>Total GPS points</dt>
+    <dd>The total number of GPS Points recorded</dd>
+  <dt>Cat busyness rating</dt>
+    <dd>An indication of how active the cat is compared to others<br>10 / The max number of points recorded * This cats total GPS points</dd>
+</dl> 
+      
+    </p>
+    
+  </div>
+</div>
+
+<link href="<%= aws_asset "assets/css/openlayers.css" %>" rel="stylesheet">
+<style type="text/css">
+
+/* map specific styles */
+#map {
+    width:75%;
+}
+
+#data-container{
+  width: 25%;
+  position:absolute; 
+  top:0; 
+  bottom:0;
+  right:0;
+  padding-top: 50px;
+  border-left: 1px grey solid;
+  overflow-y: scroll;
+}
+
+#data-container div{
+  padding: 5px;
+}
+
+#legend{
+  border-bottom: 1px grey solid;
+}
+
+#legend ul{
+  margin: 0;
+}
+
+#legend li{
+  list-style: none;
+  font-size: 1.2em;
+  padding: 3px;
+  margin: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#legend li p{
+  padding: 3px;
+  margin: 5px;
+  font-weight: normal;
+  display: none;
+}
+
+#legend li input{
+  margin-right: 5px;
+}
+
+</style>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://openspace.ordnancesurvey.co.uk/osmapapi/openspace.js?key=9C2E537D02A6F312E0405F0ACA607A42"></script>
+
+<script>
+  
+(function() {
+
+  "use strict"; //enable strict mode for whole block
+    
+  var console = (window.console = window.console || {});
+  
+  /*
+   * Define some config & globals
+   */
+   var config = {
+    CENTRE_X: 502729,
+    CENTRE_Y: 143779,
+    TOP_CAT_POINTS: 800,
+    DEBUG: false
+  };
+  var catListElem;
+  var cats = [];
+  
+  /*
+   * Handle vector feature select
+   */
+  function onFeatureSelect(feature) { 
+    
+    if(config.DEBUG) console.log(feature);
+    
+    var catListItem = catListElem.find( "li#" + feature.data.id );
+    catListItem.children().show();
+  }
+  
+  /*
+   * Handle vector feature unselect
+   */
+  function onFeatureUnselect(feature) {
+    var catListItem = catListElem.find( "li#" + feature.data.id );
+    
+    catListItem.children().hide();
+  }
+  
+  /*
+   * Add a cat to the UI
+   */  
+  function addCatToUi(cat){
+      var catId = cat.name.toLowerCase();
+      cats.push( {id: catId, cat: cat} );
+      catListElem.append( '<li id="'+catId+'" style="background-color:'+cat.colour+'" class="clickable">'+cat.name+'<p>Total GPS points: '+cat.pointsCount+'</p><p>Cat busyness rating: '+cat.catBusyRating+' / 10</p></li>' );
+  }
+  
+  //add on click event to about button
+  if(document.getElementById("hide")){
+      document.getElementById("hide").onclick = function(){
+        
+        var about = document.getElementById("about-overlay");
+        
+        if(about.className === 'imhiding')
+        {
+            about.className = '';
+            this.innerHTML = '&#x2715;';
+            
+        }else{
+          
+            about.className = 'imhiding';
+            this.innerHTML = '&#043;';
+            
+        }
+      };
+  }
+  
+  /*
+   * do the main work setting up the map
+   */  
+  function init(){
+  
+    var map;
+    var epsg4326 = new OpenLayers.Projection('EPSG:4326');
+    var epsg27700 = new OpenLayers.Projection('EPSG:27700');
+    var maxExtent = new OpenLayers.Bounds(config.CENTRE_X-10000, config.CENTRE_Y-10000, config.CENTRE_X+10000,config.CENTRE_Y+10000);
+    
+    /*
+     * Find the list elem once and hold reference to it
+     */
+    catListElem = $('#cat-list');
+
+    
+    map = new OpenSpace.Map('map',{
+      resolutions: [25, 10, 5, 4, 2.5, 2, 1],
+      restrictedExtent: maxExtent,
+      eventListeners: {
+        moveend: function(){
+          var ctr = map.getCenter();
+          window.location.hash = "x="+Math.round(ctr.lon)+"&y="+Math.round(ctr.lat)+"&z="+map.getZoom();
+        }
+      },
+      controls: [
+        new OpenLayers.Control.Zoom(),
+        new OpenLayers.Control.Navigation(),
+        new OpenLayers.Control.Attribution(),
+        new OpenLayers.Control.TouchNavigation({
+          dragPanOptions: {
+            enableKinetic: true
+          }
+        })
+      ]
+    });
+    
+    var params = OpenLayers.Util.getParameters("?"+window.location.hash.substr(1));
+    if(params.hasOwnProperty('x') && 
+      params.hasOwnProperty('y') && 
+      params.hasOwnProperty('z'))
+    {
+       
+      map.setCenter(new OpenLayers.LonLat(params.x, params.y), params.z);
+      
+    }else{
+    
+      map.setCenter(new OpenSpace.MapPoint(config.CENTRE_X,config.CENTRE_Y), 4);
+      
+    }
+    
+    
+    /*
+     * Configure dynamic styling for the OL features
+     */
+    var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+    renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
+    
+    var context = {
+      getColor: function(feature) {
+        
+        return feature['data']['color'];
+      }
+    };
+    
+    var template = {
+      pointRadius: 1.0,
+      fillColor: "${getColor}",
+      strokeOpacity: 0.7,
+      strokeColor: "${getColor}",
+      cursor: 'pointer'
+    };
+    
+    var style = new OpenLayers.Style(template, {context: context});
+    var catVectorLayer;
+
+    /*
+     * Load up the those cats
+     */
+    catVectorLayer = new OpenLayers.Layer.Vector("GeoJSON", {
+      projection: epsg4326,
+      strategies: [new OpenLayers.Strategy.Fixed()],
+      protocol: new OpenLayers.Protocol.HTTP({
+        url: "<%= aws_asset 'data/cats.json' %>",
+        format: new OpenLayers.Format.GeoJSON()
+      }),
+      styleMap: new OpenLayers.StyleMap(style),
+      renderers: renderer,
+      eventListeners: {
+      "featuresadded": function(event) {
+      
+        /*
+         * called after all features added, loop thru and add to the UI
+         */
+        for( var i = 0; i < this.features.length; i++)
+        {
+          if(config.DEBUG) console.log(this.features[i]);
+          
+          this.features[i]['data']['id'] = this.features[i]['data']['name'].toLowerCase();
+          var cat = {
+            name: this.features[i]['data']['name'],
+            colour: this.features[i]['data']['color'],
+            pointsCount: this.features[i]['data']['points'].length,
+            catBusyRating: Math.min(Math.max(Math.round(10 / config.TOP_CAT_POINTS * this.features[i]['data']['points'].length), 1), 10)
+          };
+          addCatToUi(cat);
+          }
+        }
+      }
+    });
+    map.addLayer(catVectorLayer);   
+    
+    var selectControl = new OpenLayers.Control.SelectFeature(catVectorLayer,
+      { onSelect: onFeatureSelect, 
+        onUnselect: onFeatureUnselect }        
+    );
+    map.addControl(selectControl);
+    selectControl.activate();
+    
+  /*
+   * Use jquery delegate to add a click even handler to the dynamically add 
+   * 'clickable' list items.
+   * Find the feature and zoom to extent
+   */
+    $(document).delegate('li.clickable', 'click', function(event) { 
+    
+      if(config.DEBUG) console.log(event.target.id);
+      
+      selectControl.unselectAll();
+      var clickedCatName = event.target.id;
+      
+      for(var i=0; i< catVectorLayer.features.length; i++) 
+      {
+        
+        var feature = catVectorLayer.features[i];
+        if(feature.data.id === clickedCatName)
+        {
+          map.zoomToExtent(feature.geometry.getBounds());
+          selectControl.select(feature);
+        }
+        
+      }
+    });
+    
+    
+  
+  }
+  
+  
+  window.onload = init;
+
+} ()); 
+
+</script>
+
