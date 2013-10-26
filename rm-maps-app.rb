@@ -77,7 +77,7 @@ class RmMapsApp < Sinatra::Base
     @page_title = "Mapping #operation fortress > #{get_page_title}"
     
     #@datasource_date = get_file_mod_date('public/data/op-fortress.csv')
-    @datasource_date_pretty = '21.09.2013'
+    @datasource_date_pretty = '26.10.2013'
       
     erb :op_fortress
   end
