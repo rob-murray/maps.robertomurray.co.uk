@@ -19,7 +19,7 @@ production_url : http://maps.robertomurray.co.uk
 content_image_path: /assets/images
 
 # enable [true] for production
-prod: false
+prod: true
 
 # Jekyll config
 
