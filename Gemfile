@@ -1,10 +1,8 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
+#Specify Ruby
 ruby '2.0.0'
 
 gem 'rake'
-gem 'sinatra'
-
-group :production, :staging do
-    gem 'asset_sync'
-end
+gem 'jekyll'
+gem 's3_website'

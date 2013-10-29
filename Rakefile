@@ -1,110 +1,66 @@
-require 'rubygems'
-require 'bundler'
-require 'rake'
-Bundler.setup
-
-require 'active_support/core_ext'
-require 'asset_sync'
-
-namespace :assets do
-
-  AssetSync.configure do |config|
-    config.fog_provider = 'AWS'
-    config.fog_directory = ENV['FOG_DIRECTORY']
-    config.aws_access_key_id = ENV['AWS_ACCESS_KEY_ID']
-    config.aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-    config.prefix = "assets"
-    config.public_path = Pathname("./public")
-  end
-
-  desc "Precompile assets"
-  task :precompile do
-    AssetSync.sync
-  end
-
-  desc "Sync data files"
-  task :sync_data do
-
-    AssetSync.configure do |config|
-      config.prefix = "data"
-      config.public_path = Pathname("./public")
-    end
-
-    AssetSync.sync
-  end
-end
-
-# List of environments and their heroku git remotes
-ENVIRONMENTS = {
-  :staging => 'todo',
-  :production => 'rm-maps-prod'
-}
-
 namespace :deploy do
-  ENVIRONMENTS.keys.each do |env|
-    desc "Deploy to #{env}"
-    task env do
-      #puts `git branch | grep ^* | awk '{ print $2 }'`.strip
-      current_branch = env
 
-      Rake::Task['deploy:before_deploy'].invoke(env, current_branch)
-      Rake::Task['deploy:update_code'].invoke(env, current_branch)
-      Rake::Task['deploy:after_deploy'].invoke(env, current_branch)
-    end
-  end
+    BUILD_HASH_FILE = '_includes/version.html'
 
-  task :before_deploy, :env, :branch do |t, args|
-    
-    maps_env = ENVIRONMENTS[args[:env]]#either rm-maps-prod or staging
-    
-    puts "Building #{maps_env} for #{args[:env]} with Build version: #{ENV['BLD']}"
+    GIT_DESCRIBE_CMD = '`git describe --tags`'
 
-    puts 'Putting the app into maintenance mode ...'
-    puts `heroku maintenance:on --app #{maps_env}`
-    
-    #add heroku remote conf
-    puts "Adding Heroku conf"
-    puts "git remote add #{args[:branch]} git@heroku.com:#{maps_env}.git"
-    `git remote add #{args[:branch]} git@heroku.com:#{maps_env}.git`
-      
-  end
+    #GIT_DESCRIBE_CMD = 'NO-BUILD'
 
-  task :after_deploy, :env, :branch do |t, args|
+    S3_CONFIG_FILE = 's3_website.yml'
 
-    maps_env = ENVIRONMENTS[args[:env]]#either rm-maps-prod or staging
+    JEKYLL_BUILD_CMD = 'jekyll build'
 
-    puts 'Taking the app out of maintenance mode ...'
-    puts `heroku maintenance:off --app #{maps_env}`
+    desc "Generates a file in a configured location with 'git describe' output for a build hash"
+    task :generate_build_hash do
+        puts "Generating build hash file: '#{BUILD_HASH_FILE}'"
 
-    puts "Deployment Complete!"
-  end
-
-  task :update_code, :env, :branch do |t, args|
-      puts "Updating #{ENVIRONMENTS[args[:env]]} with branch #{args[:branch]}"
-      puts "git push #{args[:branch]} +master"
-      `git push #{args[:branch]} +master`
-
-      #doing asset sync... for data   
-      puts "Sync'ing data files with AWS S3..."
-      `heroku run rake assets:sync_data`
-  end
-
-end
-
-
-
-desc "Kick off a get request to url"
-task :do_get_request_to_url, :url do |t, args|
-
-    if args[:url] then url = args[:url] else url = ENV['URL'] end
-
-    unless url.nil?
-
-        require 'net/http'
-        require 'uri'
-
-        Net::HTTP.get_response(URI.parse(url))
+        %x{echo #{GIT_DESCRIBE_CMD} > #{BUILD_HASH_FILE}}
 
     end
-    
+
+    desc "Clean the _site dir"
+    task :clean_site_dir do
+        `rm -rf _site/*`
+    end
+
+    desc "Run Jekyll to build site"
+    task :build_site do
+
+        puts "Jekyll is building the site..."
+
+        puts `#{JEKYLL_BUILD_CMD}`
+
+    end
+
+    desc "Deploy Jekyll static site with 's3_website' gem"
+    task :deploy_site do |t, args|
+
+        interactive = args[:interactive] || true
+
+        #check s3 config exists
+        raise "File #{S3_CONFIG_FILE} does not exist!" unless File.exists?(S3_CONFIG_FILE)
+
+        puts "Uploading site in interactive mode: '#{interactive}'..."
+
+        if interactive == true then
+
+            #use this if you want to display to STDOUT & basically run interactively
+            exec('s3_website push')
+
+        else
+
+            #Run in headless mode automatically deletes stuff
+            puts `s3_website push --headless`
+
+        end
+
+    end
+
+    desc "Run all deployment tasks. pass true into interactive to run in interactive mode."
+    task :go, [:interactive] => [:generate_build_hash, :clean_site_dir, :build_site, :deploy_site] do |t, args|
+
+        puts "Done."
+        
+    end
+
 end
