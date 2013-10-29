@@ -1,0 +1,32 @@
+
+## Site meta data
+
+name: "maps.robertomurray.co.uk"
+description: "Minisite of projects displaying data on maps. Displaying geolocated data using various mapping technologies."
+timezone: UK
+
+## Author meta data
+
+author:
+    name: "rob murray"
+    twitter: roberto_murray
+    github: rob-murray
+
+## Site config
+
+url: "http://localhost:4000"
+production_url : http://maps.robertomurray.co.uk
+content_image_path: /assets/images
+
+# enable [true] for production
+prod: false
+
+# Jekyll config
+
+permalink: /:title
+
+exclude: ["README.md", ".gitignore", "Gemfile", "Gemfile.lock", "vendor", ".rvmrc", ".rbenv-version", "Rakefile", "s3_website.yml"]
+
+markdown: redcarpet
+
+
