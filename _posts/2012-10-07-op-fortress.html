@@ -1,0 +1,163 @@
+---
+layout: master
+status: publish
+published: true
+title: Mapping #operation fortress
+date: 2012-10-07 00:00:00.000000000 +01:00
+
+---
+
+    <div id="map">
+      <div id="about-overlay">
+        <a href='#' id='hide'>&#x2715;</a>
+        <h3>Mapping #OpFortress</h3>
+        <p>This map visualises Tweets from <a title="https://twitter.com/HantsPolice" href="https://twitter.com/HantsPolice" target="_blank">@HantsPolice</a> about <a title="Twitter search for op fortress" href="https://twitter.com/i/#!/search/?q=opfortress" target="_blank">#OpFortress</a>, the operation to reduce crime in Southampton. It has taken all Tweets containing road names and geolocated the Tweeted road name against <a title="Read more about OS Locator" href="http://www.ordnancesurvey.co.uk/oswebsite/products/os-locator/index.html" target="_blank">OS Locator</a> data.</p>
+        <p>@version<br>Datasource updated: <time class="dsource-date" datetime="26.10.2013">26.10.2013</time></p>
+        <p>@see<br>Read about #operation fortress and how I <a href="http://robertomurray.co.uk/blog/2012/mapping-opfortress-tweets/" title="Read more">created this map</a>.</p>
+        <p class="attribution">mapping provided by <a href="http://o-s.co.uk" title="Thanks Ordnance Survey">Ordnance Survey</a></p>
+      </div>
+      
+    </div>
+
+<link href="/assets/stylesheets/openlayers.css" rel="stylesheet">
+<style type="text/css">
+
+/* popup related styles */
+.olPopup{
+  width:400px;
+  min-height: 250px;
+  overflow:inherit;
+  background-color: #0088cc !important;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  height: auto;
+  opacity:0.9 !important;
+  color: #FFF;
+}
+
+.olPopup *{
+  margin: 0px;
+  padding:0px;
+}
+
+.olPopup .olPopupContent{
+  min-height: 250px;
+  padding: 5px !important;
+  margin: 0px !important;
+  display: block;
+  clear: both;
+}
+
+.olPopup .olPopupContent h2{
+  font-size: 18px;
+  text-align: center;
+  color: #FFF;
+}
+
+.olPopup .olPopupContent p{
+  font-size: 16px;
+  border: solid 2px grey;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  padding: 7px;
+  background-color: #FFF;
+  color: #000;
+}
+
+
+</style>
+
+<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"></script>
+<script type="text/javascript" src="/assets/javascripts/OSOpenspace.js"></script>
+
+
+
+
+<script>
+  
+(function() {
+
+    "use strict"; //enable strict mode for whole block
+    
+    function init() {
+      
+      var map, layer, text, params;
+      var key = "9C2E537D02A6F312E0405F0ACA607A42";
+      var url = "http://maps.robertomurray.co.uk";
+
+      var e = 441543;
+      var n = 112631;
+      var zoom = 7;
+
+      map = new OpenLayers.Map({
+        div:'map',
+        theme: null,
+        restrictedExtent: new OpenLayers.Bounds(430000, 100000, 450000, 130000),
+        eventListeners: {
+          moveend: function(){
+            var ctr = map.getCenter();
+            window.location.hash = "x="+Math.round(ctr.lon)+"&y="+Math.round(ctr.lat)+"&z="+map.getZoom();
+          }
+        },
+        controls: [
+          new OpenLayers.Control.Zoom(),
+          new OpenLayers.Control.Navigation(),
+          new OpenLayers.Control.Attribution(),
+          new OpenLayers.Control.TouchNavigation({
+            dragPanOptions: {
+              enableKinetic: true
+            }
+          })
+        ]
+      });
+
+      layer = new OpenLayers.Layer.OSOpenSpace("OS Openspace",key, url, {});
+      map.addLayer(layer);
+    
+      //create Text layer from TSV
+      text = new OpenLayers.Layer.Text(
+        "OpFortress Tweets", 
+        {
+          location: "/data/op-fortress.csv",
+          projection: map.displayProjection,
+          format: OpenLayers.Format.Text
+      });
+      map.addLayer(text);
+
+      //get the params and zoom to
+      params = OpenLayers.Util.getParameters("?"+window.location.hash.substr(1));
+      if(params.hasOwnProperty('x') && 
+        params.hasOwnProperty('y') && 
+        params.hasOwnProperty('z')){
+
+          map.setCenter(new OpenLayers.LonLat(params.x, params.y), params.z);
+          
+      }else{
+      
+          map.setCenter(new OpenLayers.LonLat(e, n), zoom);
+          
+      }
+      
+      //add on click event to about button
+      if(document.getElementById("hide")){
+          document.getElementById("hide").onclick = function(){
+          var about = document.getElementById("about-overlay");
+          if(about.className === 'imhiding'){
+              about.className = '';
+              this.innerHTML = '&#x2715;';
+          }else{
+              about.className = 'imhiding';
+              this.innerHTML = '&#043;';
+          }
+        };      
+      
+      }
+    }
+    
+    window.onload = init;
+
+} ());
+
+ 
+</script>
+
