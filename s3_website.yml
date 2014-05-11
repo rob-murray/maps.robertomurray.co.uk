@@ -1,0 +1,10 @@
+s3_id: <%= ENV['S3_ID'] %>
+s3_secret: <%= ENV['S3_SECRET'] %>
+s3_bucket: maps.robertomurray.co.uk
+s3_endpoint: eu-west-1
+
+gzip: true
+gzip:
+  - .html
+  - .css
+  - .md
