@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 #Specify Ruby
-ruby '2.0.0'
+ruby '2.1.1'
 
 gem 'rake'
 gem 'jekyll'
