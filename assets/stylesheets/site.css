@@ -1,9 +1,16 @@
+/**
+* Global Bootstrap config
+*/
+body {
+  padding-top: 60px;
+}
+
 /*
 * Control map position
 */
 #map {
-    position:absolute; 
-    top:0; 
+    position:absolute;
+    top:0;
     bottom:0;
     width:100%;
 }
