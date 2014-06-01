@@ -4,11 +4,21 @@ Minisite of projects displaying data on maps. Displaying geolocated data using v
 
 [http://maps.robertomurray.co.uk](http://maps.robertomurray.co.uk).
 
-## Dev environment 
+## Dev environment
+
+Set up a development and build environment as follows.
+
+### Install dependencies
+
+Install Rubygems;
 
 `bundle install`
 
-## New post aka map
+Install Jekyll plugins;
+
+* [jekyll-version-plugin](https://github.com/rob-murray/jekyll-version-plugin)
+
+## Create a new post aka map
 
 Each map is a post with the Jekyll config mapping the URL to /map-title/
 
@@ -24,7 +34,7 @@ Or built:
 
 `jekyll build`
 
-Change _config.yml **prod** param to false to turn off stuff like Google Analytics
+Change `_config.yml` **prod** param to false to turn off stuff like Google Analytics
 
 ## Deployment
 
