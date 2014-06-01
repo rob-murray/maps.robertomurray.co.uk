@@ -4,6 +4,7 @@ status: publish
 published: true
 title: BBC Price of Football 2012 mapped
 date: 2012-10-24 00:00:00.000000000 +01:00
+description: Visualising the data collected by the BBC Price of Football survey 2012.
 
 ---
 
@@ -18,19 +19,19 @@ date: 2012-10-24 00:00:00.000000000 +01:00
         <p>@see<br>About the <a href="http://robertomurray.co.uk/blog/2012/mapping-bbc-price-of-football-survey/" title="Read more">Price of Football survey</a> map and how I collected the data.</p>
         <p class="attribution">mapping provided by <a href="http://o-s.co.uk" title="Thanks Ordnance Survey">Ordnance Survey</a></p>
       </div>
-      
+
     </div>
 <div id="data-container">
   <div id="legend">
     <h5>League</h5>
     <ul id="league-list">
-<!-- populated on runtime -->      
+<!-- populated on runtime -->
     </ul>
-    
+
     <p>
     <h5>Select statistic</h5>
       <select id="stat-select">
-<!-- populated on runtime -->        
+<!-- populated on runtime -->
       </select>
     </p>
   </div>
@@ -49,8 +50,8 @@ date: 2012-10-24 00:00:00.000000000 +01:00
 
 #data-container{
   width: 25%;
-  position:absolute; 
-  top:0; 
+  position:absolute;
+  top:0;
   bottom:0;
   right:0;
   padding-top: 50px;
@@ -87,11 +88,11 @@ date: 2012-10-24 00:00:00.000000000 +01:00
 <script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"></script>
 <script type="text/javascript" src="/assets/javascripts/OSOpenspace.js"></script>
 
-{% raw %} 
+{% raw %}
 
 <!-- template for club -->
 <script type="text/html" id="templ">
- 
+
   <h4>{{ club }}</h2>
   <p>{{ league }}</p>
   <dl>
@@ -106,34 +107,34 @@ date: 2012-10-24 00:00:00.000000000 +01:00
     <dt>Cheapest day out</dt>
       <dd>£ {{ cheapestDay }}</dd>
     <dt>Programme</dt>
-      <dd>£ {{ programme }}</dd>      
+      <dd>£ {{ programme }}</dd>
     <dt>Pie</dt>
-      <dd>£ {{ pie }}</dd> 
+      <dd>£ {{ pie }}</dd>
     <dt>Tea</dt>
-      <dd>£ {{ tea }}</dd>      
+      <dd>£ {{ tea }}</dd>
   </dl>
-  
+
 </script>
 
 {% endraw %}
 
 <script>
-  
+
 (function() {
 
   "use strict"; //enable strict mode for whole block
-    
+
   var console = (window.console = window.console || {});
-    
+
   /*
    * Define data structure & some config
    */
-   
+
   var leagueColours = ["#FF0000", "#278627", "#D30068", "#FFA701", "#6C8CD5", "#0F52A8", "#FFEC01", "#01AC6F", "#AEF100", "#7E07A9"];
   var leagues = ["Premier League", "Championship", "League One", "League Two", "Blue Square Bet Premier", "Scottish Premier League", "Scottish First Division", "Scottish Second Division", "Scottish Third Division", "Women's Super League"];
 
   //TODO: combine data into one object
-    
+
   var headers = ["Cheapest season ticket", "Most expensive season ticket", "Cheapest match-day ticket", "Most Expensive match-day ticket", "Cheapest day out", "Programme", "Pie", "Tea"];
   var statTypes = {
     CHEAPEST_SEASON_TICKET: 0,
@@ -145,31 +146,31 @@ date: 2012-10-24 00:00:00.000000000 +01:00
     PIE: 6,
     TEA: 7
   };
-  
+
   /*
    * Handle UI
    */
   function onFeatureSelect(feature) {
     updateTeamStat(feature);
   }
-  
+
   function onFeatureUnselect(feature) {
     //could remove the team from display?
   }
-  
+
   function getStatDisplayed(){
     var type;
     //TODO store option
     var selectVal = $("#stat-select").val();
-    
-    //var keys = Object.keys(statTypes);//this is ecma5! 
+
+    //var keys = Object.keys(statTypes);//this is ecma5!
     // unfortuntately im targeting >= IE8 so will have to do this
     var keys = _.keys(statTypes);
 
     type = statTypes[keys[selectVal]];
     return type;
   }
-  
+
   function getMultiplierForStatAndLeague(stat, league){ //have the option to do something specific for league if nec
     var multiplier;
     switch(stat)
@@ -185,10 +186,10 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       break;
     case statTypes.MOST_EXPENSIVE_MATCH_DAY_TICKET:
       multiplier = 0.5;
-      break;  
+      break;
     case statTypes.CHEAPEST_DAY_OUT:
       multiplier = 1.0;
-      break; 
+      break;
     case statTypes.PROGRAMME:
       multiplier = 10;
       break;
@@ -197,11 +198,11 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       break;
     case statTypes.TEA:
       multiplier = 10;
-      break;    
+      break;
     }
     return multiplier;
   }
-  
+
   function getFeatureCSVStringForType(type){
     var csvString;
     switch(type)
@@ -217,10 +218,10 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       break;
     case statTypes.MOST_EXPENSIVE_MATCH_DAY_TICKET:
       csvString = "Most expensive match-day ticket";
-      break;  
+      break;
     case statTypes.CHEAPEST_DAY_OUT:
       csvString = "Cheapest day out";
-      break; 
+      break;
     case statTypes.PROGRAMME:
       csvString = "Programme";
       break;
@@ -229,11 +230,11 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       break;
     case statTypes.TEA:
       csvString = "Tea";
-      break;    
+      break;
     }
     return csvString;
   }
-  
+
   function getLeaguesToDisplay(){
     var selected = [];
     //TODO this is slow. store option
@@ -258,45 +259,45 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       pie: feature.attributes["Pie"],
       tea: feature.attributes["Tea"]
     };
-    
+
     var h = t(data);
     $("#football-club-stats").html(h);
   }
-  
+
   _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g
   }
   var t = _.template($("#templ").text());
-    
+
   function init(){
-    
+
     //need a reference to this a lot
     var geoJSONlayer;
-    
+
     /*
      * Set up some UI
      */
     var selectElem = $('#stat-select');
     var leagueListElem = $('#league-list');
-    
+
     //create select options from csv headers
     $.each(headers, function(val, text) {
       selectElem.append( $('<option></option>').val(val).html(text) );
     });
-    
+
     //event handler for select change
     selectElem.change(function() {
       geoJSONlayer.redraw();
     });
-    
+
     //add leagues + colours
     $.each(leagues, function(val, text) {
       leagueListElem.append( '<li style="background-color:'+leagueColours[val]+'"><input name="leagues" type="checkbox" checked="checked" value="'+val+'">'+text+'</li>' );
-    });   
+    });
     leagueListElem.change(function() {
       geoJSONlayer.redraw();
     });
-    
+
     //add on click event to about button
     if(document.getElementById("hide")){
       document.getElementById("hide").onclick = function(){
@@ -310,7 +311,7 @@ date: 2012-10-24 00:00:00.000000000 +01:00
         }
       };
     }
-    
+
     /*
      * Set up the map
      */
@@ -345,26 +346,26 @@ date: 2012-10-24 00:00:00.000000000 +01:00
     });
 
     openspaceLayer = new OpenLayers.Layer.OSOpenSpace("OS Openspace",key, url, {});
-    map.addLayer(openspaceLayer);    
-      
+    map.addLayer(openspaceLayer);
+
     //get the params and zoom to
     params = OpenLayers.Util.getParameters("?"+window.location.hash.substr(1));
-    if(params.hasOwnProperty('x') && 
-      params.hasOwnProperty('y') && 
+    if(params.hasOwnProperty('x') &&
+      params.hasOwnProperty('y') &&
       params.hasOwnProperty('z')){
-       
+
       map.setCenter(new OpenLayers.LonLat(params.x, params.y), params.z);
     }else{
       map.setCenter(new OpenLayers.LonLat(e, n), zoom);
     }
-    
-    
+
+
     /*
      * Configure dynamic styling for the OL features
      */
     var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
     renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
-    
+
     var context = {
       getColor: function(feature) {
         var color = leagueColours[feature.attributes["League"]-1];
@@ -372,18 +373,18 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       },
       getSize: function(feature) {
         var size;
-                  
+
         var leaguesDisplayed = getLeaguesToDisplay();
         var league = feature.attributes["League"];
-                  
+
         //im not too impressed with this. TODO refactor
         if(_.indexOf(leaguesDisplayed, league-1) >= 0){
-                    
+
           var statType = getStatDisplayed();
           var multiplier = getMultiplierForStatAndLeague(statType, league);
 
           size = multiplier * feature.attributes[getFeatureCSVStringForType(statType)];
-                    
+
         }else{
           size = 0;
         }
@@ -391,7 +392,7 @@ date: 2012-10-24 00:00:00.000000000 +01:00
         return size;
       }
     };
-    
+
     var template = {
       pointRadius: "${getSize}",
       fillColor: "${getColor}",
@@ -399,9 +400,9 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       strokeColor: "${getColor}",
       cursor: 'pointer'
     };
-    
+
     var style = new OpenLayers.Style(template, {context: context});
-    
+
     /*
      * Finally add the geojson layer to map, UI controls what is shown
      */
@@ -415,20 +416,20 @@ date: 2012-10-24 00:00:00.000000000 +01:00
       renderers: renderer
     });
     map.addLayer(geoJSONlayer);
-    
+
     var selectControl = new OpenLayers.Control.SelectFeature(geoJSONlayer,
-      { onSelect: onFeatureSelect, 
+      { onSelect: onFeatureSelect,
         onUnselect: onFeatureUnselect }
     );
     map.addControl(selectControl);
-    
+
     selectControl.activate();
-  
+
   }
-  
+
   window.onload = init;
 
-} ()); 
+} ());
 
 </script>
 

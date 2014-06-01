@@ -4,6 +4,7 @@ status: publish
 published: true
 title: Mapping #operation fortress
 date: 2012-10-07 00:00:00.000000000 +01:00
+description: Visualising Tweets from @HantsPolice about OpFortress the operation to reduce crime in Hampshire.
 
 ---
 
@@ -16,7 +17,7 @@ date: 2012-10-07 00:00:00.000000000 +01:00
         <p>@see<br>Read about operation fortress and how I <a href="http://robertomurray.co.uk/blog/2012/mapping-opfortress-tweets/" title="Read more">created this map</a>.</p>
         <p class="attribution">mapping provided by <a href="http://o-s.co.uk" title="Thanks Ordnance Survey">Ordnance Survey</a></p>
       </div>
-      
+
     </div>
 
 <link href="/assets/stylesheets/openlayers.css" rel="stylesheet">
@@ -74,13 +75,13 @@ date: 2012-10-07 00:00:00.000000000 +01:00
 
 
 <script>
-  
+
 (function() {
 
     "use strict"; //enable strict mode for whole block
-    
+
     function init() {
-      
+
       var map, layer, text, params;
       var key = "9C2E537D02A6F312E0405F0ACA607A42";
       var url = "http://maps.robertomurray.co.uk";
@@ -113,10 +114,10 @@ date: 2012-10-07 00:00:00.000000000 +01:00
 
       layer = new OpenLayers.Layer.OSOpenSpace("OS Openspace",key, url, {});
       map.addLayer(layer);
-    
+
       //create Text layer from TSV
       text = new OpenLayers.Layer.Text(
-        "OpFortress Tweets", 
+        "OpFortress Tweets",
         {
           location: "/data/op-fortress.csv",
           projection: map.displayProjection,
@@ -126,18 +127,18 @@ date: 2012-10-07 00:00:00.000000000 +01:00
 
       //get the params and zoom to
       params = OpenLayers.Util.getParameters("?"+window.location.hash.substr(1));
-      if(params.hasOwnProperty('x') && 
-        params.hasOwnProperty('y') && 
+      if(params.hasOwnProperty('x') &&
+        params.hasOwnProperty('y') &&
         params.hasOwnProperty('z')){
 
           map.setCenter(new OpenLayers.LonLat(params.x, params.y), params.z);
-          
+
       }else{
-      
+
           map.setCenter(new OpenLayers.LonLat(e, n), zoom);
-          
+
       }
-      
+
       //add on click event to about button
       if(document.getElementById("hide")){
           document.getElementById("hide").onclick = function(){
@@ -149,15 +150,15 @@ date: 2012-10-07 00:00:00.000000000 +01:00
               about.className = 'imhiding';
               this.innerHTML = '&#043;';
           }
-        };      
-      
+        };
+
       }
     }
-    
+
     window.onload = init;
 
 } ());
 
- 
+
 </script>
 
