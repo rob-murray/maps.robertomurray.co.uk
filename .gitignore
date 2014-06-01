@@ -13,5 +13,5 @@ site/_site/
 coverage
 .ruby-version
 .sass-cache
-_includes/version.html
+_plugins/
 .tweet-cache/
