@@ -14,10 +14,6 @@ Install Rubygems;
 
 `bundle install`
 
-Install Jekyll plugins;
-
-* [jekyll-version-plugin](https://github.com/rob-murray/jekyll-version-plugin)
-
 ## Create a new post aka map
 
 Each map is a post with the Jekyll config mapping the URL to /map-title/

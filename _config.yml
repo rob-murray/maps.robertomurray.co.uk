@@ -25,3 +25,5 @@ prod: false
 markdown: kramdown
 permalink: /:title
 exclude: ["README.md", ".gitignore", "Gemfile", "Gemfile.lock", "vendor", ".rvmrc", ".rbenv-version", "Rakefile", "s3_website.yml"]
+
+gems: ['jekyll_version_plugin']
