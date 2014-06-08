@@ -70,47 +70,60 @@ description: The replies to the Twitter user Mr Correcter who was an automated a
     right: 0;
     font-size: 10px;
     color: #81BEF7;
+    margin-right: 2px;
   }
 
 </style>
 
-<script src='http://api.tiles.mapbox.com/mapbox.js/v0.6.4/mapbox.js'></script>
-<link href='http://api.tiles.mapbox.com/mapbox.js/v0.6.4/mapbox.css' rel='stylesheet' />
-
-
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.3/mapbox.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.3/mapbox.js'></script>
+<script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.1.2/leaflet-omnivore.min.js'></script>
 
 <script>
 
-  window.onload=function(){
-    var map = mapbox.map('map', mapbox.layer().id('roberto-murray.map-e43kwjl0')).zoom(3);
-    map.center({lat: 27.68,lon: -68.20});
-    map.ui.hash.add();
+window.onload=function(){
 
-    // Create a markers layer with features from csv
-    reqwest({
-        url: "/data/mr-c-replies.csv",
-        type: 'text',
-        success: function(resp) {
-            var markerLayer = mapbox.markers.layer().csv(resp.responseText);
-            mapbox.markers.interaction(markerLayer);
-            map.addLayer(markerLayer);
-        }
-    });
-
-    if(document.getElementById("hide")){
-        document.getElementById("hide").onclick = function(){
-        var about = document.getElementById("about-overlay");
-        if(about.className === 'imhiding'){
-            about.className = '';
-            this.innerHTML = '&#x2715;';
-        }else{
-            about.className = 'imhiding';
-            this.innerHTML = '&#043;';
-        }
-     };
+  document.getElementById("hide").onclick = function(){
+    var about = document.getElementById("about-overlay");
+    if(about.className === 'imhiding'){
+      about.className = '';
+      this.innerHTML = '&#x2715;';
+    }else{
+      about.className = 'imhiding';
+      this.innerHTML = '&#043;';
     }
+  };
+};
 
-  }
+  var map = L.mapbox.map('map', 'roberto-murray.iemmd4mf')
+    .setView([27.68, -68.20], 3);
+
+  omnivore.csv('/data/mr-c-replies.csv')
+    .on('ready', function(layer) {
+        this.eachLayer(function(marker) {
+
+          // messy crap but build up Marker.popupContent html from csv row
+          var tweetLocation = marker.feature.properties.location,
+            originalTweetUsername = marker.feature.properties.username,
+            originalTweetStatusId = marker.feature.properties.original_tweet_status_id,
+            originalTweetText = marker.feature.properties.original_tweet,
+            replyTweetStatusId = marker.feature.properties.reply_tweet_status_id,
+            replyTweetText = marker.feature.properties.reply_tweet;
+
+          var originalTweetLink = '<a class="status-id" href="https://twitter.com/' + originalTweetUsername + '/status/' + originalTweetStatusId + '" target="_blank">Tweet from ' + originalTweetUsername + '</a>';
+          var replyTweetLink = '<a class="status-id" href="https://twitter.com/Mr_Correcter/status/' + replyTweetStatusId + '" target="_blank">Reply from Mr Correcter</a>';
+
+          var popupContent = '<div class="mr-c-wrapper"><h4>@' + originalTweetUsername + '</h4><div class="mr-c-loc-str">Tweet location: '+ tweetLocation + '</div><div class="reply-post">' + originalTweetText + originalTweetLink + '</div><div class="mr-c-post">' + replyTweetText + replyTweetLink + '</div></div>';
+
+          marker.bindPopup(popupContent, {
+            maxWidth: 450
+          });
+          marker.setIcon(L.mapbox.marker.icon({
+            'marker-color': '#ff8888'
+          }));
+
+        });
+    })
+  .addTo(map);
 
 </script>
-
