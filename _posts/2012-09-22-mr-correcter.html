@@ -7,7 +7,6 @@ date: 2012-09-22 00:00:00.000000000 +01:00
 description: The replies to the Twitter user Mr Correcter who was an automated account that replied to spelling mistakes found on Twitter.
 
 ---
-
 <div id="map">
     <div id="about-overlay">
         <a href='#' id='hide'>&#x2715;</a>
@@ -18,9 +17,7 @@ description: The replies to the Twitter user Mr Correcter who was an automated a
         <p>@see<br>About the <a href="http://robertomurray.co.uk/blog/2012/the-twitter-account-mr-correcter/" title="Read more">Mr Correcter twitter account</a> and how I <a href="http://robertomurray.co.uk/blog/2012/mapping-mr-correcter-tweets/" title="Read more">collected this data</a></p>
         <p class="attribution">mapping provided by <a href="http://mapbox.com" title="View mapbox.com">mapbox.com</a></p>
     </div>
-
 </div>
-
 
 <style type="text/css">
 /* mr-c map specific styles */
@@ -73,6 +70,8 @@ description: The replies to the Twitter user Mr Correcter who was an automated a
     margin-right: 2px;
   }
 
+  #map { position:absolute; top:55px; bottom:0; width:100%; }
+
 </style>
 
 <link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.3/mapbox.css' rel='stylesheet' />
@@ -97,6 +96,7 @@ window.onload=function(){
 
   var map = L.mapbox.map('map', 'roberto-murray.iemmd4mf')
     .setView([27.68, -68.20], 3);
+  map.zoomControl.setPosition('topright');
 
   omnivore.csv('/data/mr-c-replies.csv')
     .on('ready', function(layer) {
